@@ -30,8 +30,20 @@ export const liveProvider: DataProvider = {
     return request<Batch[]>(`/api/batches${qs}`);
   },
 
-  getBatch(id) {
-    return request<Batch>(`/api/batches/${id}`);
+  async getBatch(id) {
+    const res = await fetch(`${BASE_URL}/api/batches/${id}`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      let message = `Request failed (${res.status})`;
+      try {
+        const body = (await res.json()) as { error?: string };
+        if (body?.error) message = body.error;
+      } catch {}
+      throw new Error(message);
+    }
+    return (await res.json()) as Batch;
   },
 
   submitBatch(input: NewBatchInput) {
@@ -56,7 +68,7 @@ export const liveProvider: DataProvider = {
     return request<OverharvestZone[]>("/api/zones");
   },
 
-  async getCertificateUrl(id) {
+  getCertificateUrl(id) {
     // Endpoint returns a PDF directly.
     return `${BASE_URL}/api/batches/${id}/certificate`;
   },
