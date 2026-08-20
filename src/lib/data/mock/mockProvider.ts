@@ -25,8 +25,7 @@ export const mockProvider: DataProvider = {
   async getBatch(id) {
     await delay(400);
     const found = batches.find((b) => b.id === id);
-    if (!found) throw new Error("Batch not found");
-    return { ...found };
+    return found ? { ...found } : null;
   },
 
   async submitBatch(input: NewBatchInput) {
@@ -67,8 +66,7 @@ export const mockProvider: DataProvider = {
     return zones.map((z) => ({ ...z }));
   },
 
-  async getCertificateUrl(id) {
-    await delay(600);
+  getCertificateUrl(id) {
     return `#certificate-${id}`;
   },
 };
