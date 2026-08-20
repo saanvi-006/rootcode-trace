@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raw AI Sandbox Test</title>
+    <!-- Import pure TensorFlow.js from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+</head>
+<body style="font-family: monospace; padding: 20px;">
+    <h2>Terminal Sandbox: AI Model Test</h2>
+    <p>1. Open Developer Tools (F12 or Ctrl+Shift+I) and click the "Console" tab.</p>
+    <p>2. Upload a plant photo below.</p>
+    
+    <input type="file" id="upload" accept="image/*" />
+    <br><br>
+    <img id="image" width="224" height="224" style="display:none;" />
+
+    <script>
+        // Exact labels from your metadata
+        const MODEL_CLASSES = [
+            "Ashwagandha",
+            "Brahmi",
+            "Tulsi",
+            "Neem",
+            "Lookalike (non-medicinal)"
+        ];
+
+        document.getElementById('upload').addEventListener('change', async (e) => {
+            console.clear();
+            console.log("⏳ 1. Image selected. Preparing test...");
+            
+            const file = e.target.files[0];
+            const img = document.getElementById('image');
+            img.src = URL.createObjectURL(file);
+
+            img.onload = async () => {
+                try {
+                    console.log("⏳ 2. Fetching model from Next.js server...");
+                    
+                    // We grab the model from your Next.js local server
+                    const model = await tf.loadLayersModel('http://localhost:8080/models/model.json');
+                    console.log("✅ 3. Model Loaded Successfully!");
+
+                    console.log("⏳ 4. Preprocessing Image (Converting pixels to Tensor)...");
+                    
+                    // The exact math from our backend code
+                    const tensor = tf.browser.fromPixels(img)
+                        .resizeNearestNeighbor([224, 224])
+                        .toFloat()
+                        .div(tf.scalar(127.5))
+                        .sub(tf.scalar(1))
+                        .expandDims();
+
+                    console.log("⏳ 5. Running Neural Network Inference...");
+                    const predictions = await model.predict(tensor);
+                    
+                    // Extract the raw array of probabilities
+                    const data = await predictions.data();
+                    console.log("🧠 Raw Array output from model:", Array.from(data));
+
+                    // Calculate results
+                    const maxConfidence = Math.max(...Array.from(data));
+                    const classIndex = data.indexOf(maxConfidence);
+                    const predictedName = MODEL_CLASSES[classIndex] || "Unknown";
+
+                    console.log("\n🌿 --- FINAL PREDICTION RESULTS --- 🌿");
+                    console.log(`Detected Plant: ${predictedName}`);
+                    console.log(`Confidence Score: ${(maxConfidence * 100).toFixed(2)}%`);
+                    console.log("--------------------------------------\n");
+
+                    // Clean up memory
+                    tf.dispose([tensor, predictions]);
+                    
+                } catch (error) {
+                    console.error("❌ Test failed! Make sure your Next.js server (npm run dev) is running in the background.", error);
+                }
+            };
+        });
+    </script>
+</body>
+</html>

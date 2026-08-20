@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Camera, MapPin, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { SiteHeader } from "@/components/rootcode/SiteHeader";
 import { ConfidenceBadge } from "@/components/rootcode/StatusBadges";
 import { dataProvider } from "@/lib/data";
+import { predictSpecies } from "@/lib/species-classifier"; // Import the real AI
 
 export const Route = createFileRoute("/harvest")({
   head: () => ({
@@ -32,13 +33,13 @@ export const Route = createFileRoute("/harvest")({
 const SPECIES = [
   "Withania somnifera (Ashwagandha)",
   "Bacopa monnieri (Brahmi)",
-  "Curcuma longa (Turmeric)",
   "Ocimum tenuiflorum (Tulsi)",
-  "Asparagus racemosus (Shatavari)",
+  "Azadirachta indica (Neem)",
 ];
 
 function HarvestPage() {
   const navigate = useNavigate();
+  const imageRef = useRef<HTMLImageElement>(null); // Added so TFJS can read the pixels
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [species, setSpecies] = useState<string>(SPECIES[0] ?? "");
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
@@ -46,7 +47,22 @@ function HarvestPage() {
   const [aiResult, setAiResult] = useState<{ name: string; score: number } | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isPredicting, setIsPredicting] = useState(false); // Added a loading state
   const [error, setError] = useState<string | null>(null);
+
+  // The bridge to your real model
+  async function runPrediction() {
+    if (!imageRef.current) return;
+    setIsPredicting(true);
+    try {
+      const result = await predictSpecies(imageRef.current, species);
+      setAiResult(result);
+    } catch (e) {
+      setError("AI verification failed. Check model files.");
+    } finally {
+      setIsPredicting(false);
+    }
+  }
 
   function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -54,11 +70,7 @@ function HarvestPage() {
     const url = URL.createObjectURL(file);
     setPhotoPreview(url);
     setConfirmed(false);
-    // Mock AI inference on the uploaded photo.
-    setAiResult({
-      name: species.replace(/\s*\(.*\)$/, ""),
-      score: Number((0.72 + Math.random() * 0.26).toFixed(2)),
-    });
+    setAiResult(null); // STRIPPED THE MOCK DATA!
   }
 
   function captureGps() {
@@ -92,7 +104,6 @@ function HarvestPage() {
         gps_lat: coords.lat,
         gps_lon: coords.lon,
         harvester_id: "h-001",
-        // TODO: replace with real Supabase upload once bucket/anon key received
         photo_url: photoPreview ?? "https://placehold.co/800x600?text=Herb+photo",
         timestamp: new Date().toISOString(),
       });
@@ -130,8 +141,11 @@ function HarvestPage() {
             <Input type="file" accept="image/*" capture="environment" onChange={onPhoto} />
             {photoPreview && (
               <img
+                ref={imageRef} // Added REF here
                 src={photoPreview}
                 alt="Harvested herb sample"
+                onLoad={runPrediction} // Triggers REAL model when image loads
+                crossOrigin="anonymous"
                 className="aspect-video w-full rounded-md border border-border object-cover"
               />
             )}
@@ -167,17 +181,11 @@ function HarvestPage() {
                 id="species"
                 value={species}
                 onChange={(e) => {
-                  const value = e.target.value;
-                  setSpecies(value);
+                  setSpecies(e.target.value);
                   setConfirmed(false);
-                  if (photoPreview) {
-                    setAiResult({
-                    name: value.replace(/\s*\(.*\)$/, ""),
-                  score: Number((0.72 + Math.random() * 0.26).toFixed(2)),
-                  });
-                }
-              }}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  if (photoPreview) runPrediction(); // Re-runs REAL model if they change dropdown
+                }}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               >
                 {SPECIES.map((s) => (
                   <option key={s} value={s}>
@@ -187,7 +195,9 @@ function HarvestPage() {
               </select>
             </div>
 
-            {aiResult ? (
+            {isPredicting ? (
+               <p className="text-sm text-primary animate-pulse">Running AI verification...</p>
+            ) : aiResult ? (
               <div className="rounded-lg border border-border bg-secondary/50 p-4">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   AI species result
