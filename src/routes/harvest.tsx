@@ -40,7 +40,7 @@ const SPECIES = [
 function HarvestPage() {
   const navigate = useNavigate();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [species, setSpecies] = useState(SPECIES[0]);
+  const [species, setSpecies] = useState<string>(SPECIES[0] ?? "");
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [aiResult, setAiResult] = useState<{ name: string; score: number } | null>(null);
@@ -167,10 +167,17 @@ function HarvestPage() {
                 id="species"
                 value={species}
                 onChange={(e) => {
-                  setSpecies(e.target.value);
+                  const value = e.target.value;
+                  setSpecies(value);
                   setConfirmed(false);
-                }}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  if (photoPreview) {
+                    setAiResult({
+                    name: value.replace(/\s*\(.*\)$/, ""),
+                  score: Number((0.72 + Math.random() * 0.26).toFixed(2)),
+                  });
+                }
+              }}
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               >
                 {SPECIES.map((s) => (
                   <option key={s} value={s}>
