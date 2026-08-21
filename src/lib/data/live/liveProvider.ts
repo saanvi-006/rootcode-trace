@@ -86,23 +86,24 @@ export const liveProvider: DataProvider = {
     return (await res.json()) as Batch;
   },
 
-  submitBatch(input: NewBatchInput) {
+  async submitBatch(input: NewBatchInput) {
     // POST /api/batches — body includes quantity_kg (required, 400s if omitted)
     // Server returns the authoritative batch with real hash/prev_hash/payment fields.
-    return request<Batch>("/api/batches", {
+    const res = await request<{ batch?: Batch } & Batch>("/api/batches", {
       method: "POST",
       body: JSON.stringify(input),
     });
+    return res.batch ?? res;
   },
 
-  decideQC(id, qc_status) {
+  async decideQC(id, qc_status) {
     // Real API: POST /api/qc with { batchId, decision, notes }
-    // decision is "pass" or "fail" (same values as our qc_status)
-    // notes: collection-centre UI has no notes field, pass empty string.
-    return request<Batch>("/api/qc", {
+    // Response format: { batch: Batch, harvester: Harvester }
+    const res = await request<{ batch?: Batch } & Batch>("/api/qc", {
       method: "POST",
       body: JSON.stringify({ batchId: id, decision: qc_status, notes: "" }),
     });
+    return res.batch ?? res;
   },
 
   getWallets() {

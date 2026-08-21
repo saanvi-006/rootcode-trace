@@ -133,7 +133,19 @@ function CollectPage() {
       const updated = await dataProvider.decideQC(selected.id, qc);
       const freshBatches = await dataProvider.getBatches();
       setBatches(freshBatches);
-      setSelected(freshBatches.find((b) => b.id === updated.id) ?? updated);
+      const targetId = updated?.id ?? selected.id;
+      const fresh = freshBatches.find((b) => b.id === targetId);
+      if (fresh) {
+        setSelected(fresh);
+      } else if (updated && updated.id && updated.species_claimed) {
+        setSelected(updated);
+      } else {
+        setSelected({
+          ...selected,
+          qc_status: qc,
+          payment_status: qc === "pass" ? "released" : "pending",
+        });
+      }
       toast.success(qc === "pass" ? "Batch passed — payment released" : "Batch marked failed");
     } catch (e) {
       setError(e instanceof Error ? e.message : "QC update failed");
@@ -288,16 +300,21 @@ function CollectPage() {
                 )}
 
                 <div className="flex gap-3 pt-2">
-                  <Button className="flex-1" disabled={deciding} onClick={() => decide("pass")}>
-                    Pass QC
+                  <Button
+                    className="flex-1"
+                    variant={selected.qc_status === "pass" ? "outline" : "default"}
+                    disabled={deciding || selected.qc_status === "pass"}
+                    onClick={() => decide("pass")}
+                  >
+                    {selected.qc_status === "pass" ? "✓ QC Passed" : "Pass QC"}
                   </Button>
                   <Button
                     className="flex-1"
-                    variant="destructive"
-                    disabled={deciding}
+                    variant={selected.qc_status === "fail" ? "outline" : "destructive"}
+                    disabled={deciding || selected.qc_status === "fail"}
                     onClick={() => decide("fail")}
                   >
-                    Fail QC
+                    {selected.qc_status === "fail" ? "✕ QC Failed" : "Fail QC"}
                   </Button>
                 </div>
               </div>
