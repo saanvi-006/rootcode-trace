@@ -1,9 +1,11 @@
 import type { DataProvider } from "./provider";
-import { mockProvider } from "./mock/mockProvider";
-// import { liveProvider } from "./live/liveProvider";
+// import { mockProvider } from "./mock/mockProvider";
+import { liveProvider } from "./live/liveProvider";
 
-// Flip this single line to go live once VITE_API_BASE_URL is confirmed.
-export const dataProvider: DataProvider = mockProvider;
+// Live backend: https://rootcode-herbtrace-api.onrender.com
+// Supabase bucket: harvest-photos (anon key, public policies)
+// To revert to mock during debugging, swap the two lines above.
+export const dataProvider: DataProvider = liveProvider;
 
 export type { DataProvider };
 export * from "./types";
