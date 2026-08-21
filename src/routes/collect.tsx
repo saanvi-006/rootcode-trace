@@ -47,12 +47,21 @@ export const Route = createFileRoute("/collect")({
   component: CollectPage,
 });
 
+const API_BASE_URL =
+  import.meta.env["VITE_API_BASE_URL"] ?? "https://rootcode-herbtrace-api.onrender.com";
+
 function CollectPage() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Batch | null>(null);
   const [deciding, setDeciding] = useState(false);
+  const [qrData, setQrData] = useState<{
+    qr_data_url: string;
+    provenance_url?: string;
+  } | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [qrError, setQrError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -65,6 +74,57 @@ function CollectPage() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!selected || selected.qc_status !== "pass") {
+      setQrData(null);
+      setQrLoading(false);
+      setQrError(null);
+      return;
+    }
+
+    let active = true;
+    setQrLoading(true);
+    setQrError(null);
+    setQrData(null);
+
+    const url = `${API_BASE_URL}/api/qr?batchId=${encodeURIComponent(selected.id)}`;
+    fetch(url)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to load QR code (${res.status})`);
+        }
+        return (await res.json()) as {
+          qr?: string;
+          qr_data_url?: string;
+          provenance_url?: string;
+          batch_id?: string;
+        };
+      })
+      .then((data) => {
+        if (!active) return;
+        const qrUrl = data.qr_data_url || data.qr;
+        if (qrUrl) {
+          setQrData({
+            qr_data_url: qrUrl,
+            provenance_url: data.provenance_url,
+          });
+        } else {
+          setQrError("No QR image data returned");
+        }
+      })
+      .catch((e) => {
+        if (!active) return;
+        setQrError(e instanceof Error ? e.message : "Failed to load QR code");
+      })
+      .finally(() => {
+        if (active) setQrLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selected?.id, selected?.qc_status]);
 
   async function decide(qc: "pass" | "fail") {
     if (!selected) return;
@@ -185,6 +245,36 @@ function CollectPage() {
                   <HashChip label="hash" value={selected.hash} />
                   <HashChip label="prev" value={selected.prev_hash} />
                 </div>
+
+                {/* QR Code Section for Passed Batches */}
+                {selected.qc_status === "pass" && (
+                  <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-serif text-sm font-medium">Provenance QR code</h3>
+                      <span className="text-xs text-muted-foreground">Scan to verify</span>
+                    </div>
+                    {qrLoading ? (
+                      <div className="flex flex-col items-center justify-center py-4">
+                        <SproutSpinner label="Generating QR code…" />
+                      </div>
+                    ) : qrError ? (
+                      <p className="text-xs text-destructive">{qrError}</p>
+                    ) : qrData?.qr_data_url ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <img
+                          src={qrData.qr_data_url}
+                          alt={`Provenance QR for batch ${selected.id}`}
+                          className="size-40 rounded-md border border-border bg-white p-2 shadow-sm"
+                        />
+                        {qrData.provenance_url && (
+                          <p className="font-mono text-[11px] text-muted-foreground break-all text-center">
+                            {qrData.provenance_url}
+                          </p>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
 
                 <div className="flex gap-3 pt-2">
                   <Button className="flex-1" disabled={deciding} onClick={() => decide("pass")}>
