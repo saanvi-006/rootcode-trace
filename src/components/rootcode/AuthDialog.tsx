@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Leaf, FlaskConical, ShieldCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -22,14 +23,11 @@ const roles: { value: Role; label: string; icon: typeof Leaf }[] = [
   { value: "admin", label: "Admin", icon: ShieldCheck },
 ];
 
-/**
- * AuthDialog — sign-in modal reachable from SiteHeader.
- *
- * UI-only for now: Google OAuth and email/password both simulate a
- * request and surface a toast. Wire the real handlers up once the
- * auth backend (Supabase Auth per the handoff brief) is in place —
- * the `onGoogleSignIn` / `onEmailSignIn` props are the seam to do that.
- */
+const roleDestinations: Record<Role, { path: "/harvest" | "/collect" | "/admin"; name: string }> = {
+  harvester: { path: "/harvest", name: "Harvester" },
+  collector: { path: "/collect", name: "Collection Centre (QC)" },
+  admin: { path: "/admin", name: "Admin Dashboard" },
+};
 
 type AuthDialogProps = {
   trigger?: React.ReactNode;
@@ -38,6 +36,7 @@ type AuthDialogProps = {
 };
 
 export function AuthDialog({ trigger, onGoogleSignIn, onEmailSignIn }: AuthDialogProps) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [role, setRole] = useState<Role>("harvester");
   const [email, setEmail] = useState("");
@@ -45,17 +44,22 @@ export function AuthDialog({ trigger, onGoogleSignIn, onEmailSignIn }: AuthDialo
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [loading, setLoading] = useState<"google" | "email" | null>(null);
 
+  function routeUser(chosenRole: Role) {
+    const dest = roleDestinations[chosenRole];
+    toast.success(`Signed in as ${dest.name}`);
+    setOpen(false);
+    navigate({ to: dest.path });
+  }
+
   async function handleGoogle() {
     setLoading("google");
     try {
       if (onGoogleSignIn) {
         await onGoogleSignIn(role);
       } else {
-        await new Promise((r) => setTimeout(r, 600));
-        toast.info("Google sign-in isn't connected yet", {
-          description: "This is a UI preview — hook up Supabase Auth to enable it.",
-        });
+        await new Promise((r) => setTimeout(r, 300));
       }
+      routeUser(role);
     } finally {
       setLoading(null);
     }
@@ -72,12 +76,9 @@ export function AuthDialog({ trigger, onGoogleSignIn, onEmailSignIn }: AuthDialo
       if (onEmailSignIn) {
         await onEmailSignIn({ email, password, role });
       } else {
-        await new Promise((r) => setTimeout(r, 600));
-        toast.info(mode === "signin" ? "Sign-in isn't connected yet" : "Account creation isn't connected yet", {
-          description: "This is a UI preview — hook up Supabase Auth to enable it.",
-        });
+        await new Promise((r) => setTimeout(r, 300));
       }
-      setOpen(false);
+      routeUser(role);
     } finally {
       setLoading(null);
     }
