@@ -276,16 +276,6 @@ function CollectPage() {
                         }
                         size={160}
                       />
-                      <a
-                        href={`/provenance/${selected.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono text-[11px] text-primary underline-offset-4 hover:underline break-all text-center"
-                      >
-                        {typeof window !== "undefined"
-                          ? `${window.location.origin}/provenance/${selected.id}`
-                          : `https://rootcode-trace.vercel.app/provenance/${selected.id}`}
-                      </a>
                     </div>
                   </div>
                 )}
