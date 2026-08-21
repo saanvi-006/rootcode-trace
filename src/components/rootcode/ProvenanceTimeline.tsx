@@ -147,8 +147,8 @@ export function ProvenanceTimeline({
         </Card>
       )}
 
-      {/* Batch QR code card — only available after Quality Control passes */}
-      {batch.qc_status === "pass" && (
+      {/* Batch QR code card — visible only to the harvester once QC passes */}
+      {showPaymentInfo && batch.qc_status === "pass" && (
         <Card className="mt-6">
           <CardHeader>
             <CardTitle className="font-serif text-base">Batch Provenance QR</CardTitle>
