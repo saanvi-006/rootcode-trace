@@ -62,11 +62,12 @@ export async function supabaseUploadPhoto(file: File): Promise<string> {
 // Live data provider — wired to the real deployed API
 // ---------------------------------------------------------------------------
 export const liveProvider: DataProvider = {
-  getBatches(filter) {
+  async getBatches(filter) {
     const qs = filter?.qc_status
       ? `?qc_status=${encodeURIComponent(filter.qc_status)}`
       : "";
-    return request<Batch[]>(`/api/batches${qs}`);
+    const list = await request<Batch[]>(`/api/batches${qs}`);
+    return list.slice().sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   },
 
   async getBatch(id) {
