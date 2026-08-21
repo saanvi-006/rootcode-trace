@@ -279,21 +279,14 @@ function CollectPage() {
                           alt={`Provenance QR for batch ${selected.id}`}
                           className="size-40 rounded-md border border-border bg-white p-2 shadow-sm"
                         />
-                        {qrData.provenance_url && (
-                          <div className="flex flex-col items-center gap-1">
-                            <p className="font-mono text-[11px] text-muted-foreground break-all text-center">
-                              {qrData.provenance_url}
-                            </p>
-                            <a
-                              href={`/provenance/${selected.id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-primary underline hover:text-primary/80"
-                            >
-                              Open Provenance View ↗
-                            </a>
-                          </div>
-                        )}
+                        <a
+                          href={`/provenance/${selected.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary underline hover:text-primary/80"
+                        >
+                          Open Provenance View ↗
+                        </a>
                       </div>
                     ) : null}
                   </div>
