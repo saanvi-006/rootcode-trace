@@ -68,6 +68,9 @@ export const mockProvider: DataProvider = {
       payment_status: "pending",
       prev_hash: prev ? prev.hash : null,
       hash: randomHash(),
+      qc_notes: null,
+      qc_timestamp: null,
+      payment_amount: null,
     };
     batches.push(batch);
     saveBatches(batches);
