@@ -147,25 +147,27 @@ export function ProvenanceTimeline({
         </Card>
       )}
 
-      {/* Batch QR code card */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle className="font-serif text-base">Batch Provenance QR</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-3">
-          <QRCode
-            value={
-              typeof window !== "undefined"
-                ? `${window.location.origin.replace("localhost", "192.168.0.105")}/provenance/${batch.id}`
-                : `/provenance/${batch.id}`
-            }
-            size={160}
-          />
-          <p className="font-mono text-xs text-muted-foreground text-center">
-            Scan to view this batch on mobile devices
-          </p>
-        </CardContent>
-      </Card>
+      {/* Batch QR code card — only available after Quality Control passes */}
+      {batch.qc_status === "pass" && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="font-serif text-base">Batch Provenance QR</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-3">
+            <QRCode
+              value={
+                typeof window !== "undefined"
+                  ? `${window.location.origin}/provenance/${batch.id}`
+                  : `/provenance/${batch.id}`
+              }
+              size={160}
+            />
+            <p className="font-mono text-xs text-muted-foreground text-center">
+              Scan to view public provenance
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="mt-6">
         <CardHeader>

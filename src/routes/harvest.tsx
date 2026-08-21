@@ -120,20 +120,34 @@ function HarvestPage() {
   // ---------------------------------------------------------------------------
   function captureGps() {
     if (!("geolocation" in navigator)) {
-      setError("Geolocation is not available on this device.");
+      const msg = "Geolocation is not supported on this browser/device.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
     setLocating(true);
+    setError(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
         setLocating(false);
+        setError(null);
+        toast.success("GPS coordinates captured!");
       },
-      () => {
+      (err) => {
         setLocating(false);
-        setError("Could not read GPS. Enable location access and retry.");
+        let msg = "Could not read GPS. Please turn ON your device's Location / GPS and grant browser permission, then try again.";
+        if (err.code === err.PERMISSION_DENIED) {
+          msg = "Location permission was denied. Please allow location access in your browser or device settings to capture GPS.";
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          msg = "GPS signal unavailable or turned off. Please turn ON location / GPS in your device settings and retry.";
+        } else if (err.code === err.TIMEOUT) {
+          msg = "Location request timed out. Please ensure your GPS is enabled with clear signal and retry.";
+        }
+        setError(msg);
+        toast.error(msg, { duration: 6000 });
       },
-      { enableHighAccuracy: true, timeout: 10000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   }
 
