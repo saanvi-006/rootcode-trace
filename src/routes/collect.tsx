@@ -71,8 +71,9 @@ function CollectPage() {
     setDeciding(true);
     try {
       const updated = await dataProvider.decideQC(selected.id, qc);
-      setBatches((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
-      setSelected(updated);
+      const freshBatches = await dataProvider.getBatches();
+      setBatches(freshBatches);
+      setSelected(freshBatches.find((b) => b.id === updated.id) ?? updated);
       toast.success(qc === "pass" ? "Batch passed — payment released" : "Batch marked failed");
     } catch (e) {
       setError(e instanceof Error ? e.message : "QC update failed");

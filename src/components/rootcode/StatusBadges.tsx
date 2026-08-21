@@ -11,11 +11,14 @@ export function QcBadge({ status }: { status: Batch["qc_status"] }) {
 }
 
 export function PaymentBadge({ status }: { status: Batch["payment_status"] }) {
-  return status === "released" ? (
-    <Badge variant="outline" className="border-success/40 text-success">
-      Payment released
-    </Badge>
-  ) : (
+  if (status === "released") {
+    return (
+      <Badge variant="outline" className="border-success/40 text-success">
+        Payment released
+      </Badge>
+    );
+  }
+  return (
     <Badge variant="outline" className="border-earth/40 text-earth">
       Payment pending
     </Badge>
