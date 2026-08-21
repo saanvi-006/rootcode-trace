@@ -64,7 +64,7 @@ export function ProvenanceTimeline({
           <div className="leaf-surface flex h-32 items-center justify-center rounded-md border border-border">
             <span className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="size-4 text-primary" />
-              {batch.gps_lat.toFixed(4)}, {batch.gps_lon.toFixed(4)}
+              {batch.gps_lat?.toFixed(4) ?? "—"}, {batch.gps_lon?.toFixed(4) ?? "—"}
             </span>
           </div>
         </TimelineItem>
