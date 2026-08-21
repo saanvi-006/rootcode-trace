@@ -271,8 +271,8 @@ function CollectPage() {
                       <QRCode
                         value={
                           typeof window !== "undefined"
-                            ? `${window.location.origin.replace("localhost", "192.168.0.105")}/provenance/${selected.id}`
-                            : (qrData?.provenance_url ?? `/provenance/${selected.id}`)
+                            ? `${window.location.origin}/provenance/${selected.id}`
+                            : `https://rootcode-trace.vercel.app/provenance/${selected.id}`
                         }
                         size={160}
                       />
@@ -283,8 +283,8 @@ function CollectPage() {
                         className="font-mono text-[11px] text-primary underline-offset-4 hover:underline break-all text-center"
                       >
                         {typeof window !== "undefined"
-                          ? `${window.location.origin.replace("localhost", "192.168.0.105")}/provenance/${selected.id}`
-                          : (qrData?.provenance_url ?? `/provenance/${selected.id}`)}
+                          ? `${window.location.origin}/provenance/${selected.id}`
+                          : `https://rootcode-trace.vercel.app/provenance/${selected.id}`}
                       </a>
                     </div>
                   </div>
