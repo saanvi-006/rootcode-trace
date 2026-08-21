@@ -52,6 +52,18 @@ const SPECIES_OPTIONS = [
   "Lookalike (non-medicinal)",
 ] as const;
 
+// Mirror of the SPECIES_MAPPING in species-classifier.ts.
+// The classifier returns the scientific name (e.g. "Ocimum tenuiflorum (Tulsi)"),
+// so to detect a genuine mismatch we must compare against the mapped form of
+// whatever the harvester claimed — not the raw common name.
+const SPECIES_TO_SCIENTIFIC: Record<string, string> = {
+  "Ashwagandha": "Withania somnifera (Ashwagandha)",
+  "Brahmi": "Bacopa monnieri (Brahmi)",
+  "Tulsi": "Ocimum tenuiflorum (Tulsi)",
+  "Neem": "Azadirachta indica (Neem)",
+  "Lookalike (non-medicinal)": "Unverified / Lookalike (Reject)",
+};
+
 function HarvestPage() {
   const navigate = useNavigate();
 
@@ -168,7 +180,8 @@ function HarvestPage() {
   }
 
   const speciesMismatch =
-    aiResult !== null && aiResult.name !== speciesClaimed;
+    aiResult !== null &&
+    aiResult.name !== (SPECIES_TO_SCIENTIFIC[speciesClaimed] ?? speciesClaimed);
   const qty = parseFloat(quantityKg);
   const canSubmit =
     confirmed &&

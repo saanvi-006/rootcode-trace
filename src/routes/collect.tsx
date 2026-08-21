@@ -237,7 +237,8 @@ function CollectPage() {
                   <div className="flex justify-between gap-4">
                     <dt className="text-muted-foreground">GPS</dt>
                     <dd>
-                      {selected.gps_lat.toFixed(4)}, {selected.gps_lon.toFixed(4)}
+                      {selected.gps_lat?.toFixed(4) ?? "—"},{" "}
+                      {selected.gps_lon?.toFixed(4) ?? "—"}
                     </dd>
                   </div>
                 </dl>

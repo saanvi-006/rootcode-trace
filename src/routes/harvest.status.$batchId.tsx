@@ -57,9 +57,6 @@ function HarvestStatusPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl px-4 py-8">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">
-          Your batch status
-        </p>
 
         {loading && <SproutSpinner label="Loading your batch…" />}
 
