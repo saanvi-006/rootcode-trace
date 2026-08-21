@@ -5,7 +5,7 @@ import { SproutSpinner } from "@/components/rootcode/Sprout";
 import { ProvenanceTimeline } from "@/components/rootcode/ProvenanceTimeline";
 import { dataProvider, type Batch, type Harvester } from "@/lib/data";
 
-export const Route = createFileRoute("/harvest/status/$batchId")({
+export const Route = createFileRoute("/harvest-status/$batchId")({
   head: () => ({
     meta: [
       { title: "My Batch Status — RootCode" },
@@ -20,9 +20,10 @@ export const Route = createFileRoute("/harvest/status/$batchId")({
   component: HarvestStatusPage,
 });
 
-// Harvester-facing status view.
-// Identical to the public trace view, plus the payment section (showPaymentInfo=true).
-// Linked to from the harvester submit flow — only the actual harvester sees this.
+// Harvester-facing provenance view.
+// Same timeline as the public /trace/:batchId page, plus payment section.
+// Linked from the harvest submit flow — only the actual harvester lands here.
+// On reload, re-fetches fresh data so QC/payment updates are reflected immediately.
 function HarvestStatusPage() {
   const { batchId } = Route.useParams();
   const [batch, setBatch] = useState<Batch | null>(null);
@@ -34,10 +35,7 @@ function HarvestStatusPage() {
     let active = true;
     setLoading(true);
 
-    Promise.all([
-      dataProvider.getBatch(batchId),
-      dataProvider.getWallets(),
-    ])
+    Promise.all([dataProvider.getBatch(batchId), dataProvider.getWallets()])
       .then(([b, harvesters]) => {
         if (!active) return;
         setBatch(b);
@@ -45,7 +43,9 @@ function HarvestStatusPage() {
           setHarvester(harvesters.find((h) => h.id === b.harvester_id));
         }
       })
-      .catch((e) => active && setError(e instanceof Error ? e.message : "Could not load batch"))
+      .catch((e) =>
+        active && setError(e instanceof Error ? e.message : "Could not load batch"),
+      )
       .finally(() => active && setLoading(false));
 
     return () => {
@@ -57,7 +57,6 @@ function HarvestStatusPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto w-full max-w-2xl px-4 py-8">
-
         {loading && <SproutSpinner label="Loading your batch…" />}
 
         {error && !loading && (

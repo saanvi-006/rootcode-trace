@@ -13,9 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CollectRouteImport } from './routes/collect'
 import { Route as HarvestRouteImport } from './routes/harvest'
+import { Route as HarvestStatusBatchIdRouteImport } from './routes/harvest-status.$batchId'
 import { Route as ProvenanceBatchIdRouteImport } from './routes/provenance.$batchId'
 import { Route as TraceBatchIdRouteImport } from './routes/trace.$batchId'
-import { Route as HarvestStatusBatchIdRouteImport } from './routes/harvest.status.$batchId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -37,6 +37,11 @@ const HarvestRoute = HarvestRouteImport.update({
   path: '/harvest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HarvestStatusBatchIdRoute = HarvestStatusBatchIdRouteImport.update({
+  id: '/harvest-status/$batchId',
+  path: '/harvest-status/$batchId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProvenanceBatchIdRoute = ProvenanceBatchIdRouteImport.update({
   id: '/provenance/$batchId',
   path: '/provenance/$batchId',
@@ -47,39 +52,34 @@ const TraceBatchIdRoute = TraceBatchIdRouteImport.update({
   path: '/trace/$batchId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HarvestStatusBatchIdRoute = HarvestStatusBatchIdRouteImport.update({
-  id: '/status/$batchId',
-  path: '/status/$batchId',
-  getParentRoute: () => HarvestRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/collect': typeof CollectRoute
-  '/harvest': typeof HarvestRouteWithChildren
+  '/harvest': typeof HarvestRoute
+  '/harvest-status/$batchId': typeof HarvestStatusBatchIdRoute
   '/provenance/$batchId': typeof ProvenanceBatchIdRoute
   '/trace/$batchId': typeof TraceBatchIdRoute
-  '/harvest/status/$batchId': typeof HarvestStatusBatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/collect': typeof CollectRoute
-  '/harvest': typeof HarvestRouteWithChildren
+  '/harvest': typeof HarvestRoute
+  '/harvest-status/$batchId': typeof HarvestStatusBatchIdRoute
   '/provenance/$batchId': typeof ProvenanceBatchIdRoute
   '/trace/$batchId': typeof TraceBatchIdRoute
-  '/harvest/status/$batchId': typeof HarvestStatusBatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/collect': typeof CollectRoute
-  '/harvest': typeof HarvestRouteWithChildren
+  '/harvest': typeof HarvestRoute
+  '/harvest-status/$batchId': typeof HarvestStatusBatchIdRoute
   '/provenance/$batchId': typeof ProvenanceBatchIdRoute
   '/trace/$batchId': typeof TraceBatchIdRoute
-  '/harvest/status/$batchId': typeof HarvestStatusBatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,34 +88,35 @@ export interface FileRouteTypes {
     | '/admin'
     | '/collect'
     | '/harvest'
+    | '/harvest-status/$batchId'
     | '/provenance/$batchId'
     | '/trace/$batchId'
-    | '/harvest/status/$batchId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
     | '/collect'
     | '/harvest'
+    | '/harvest-status/$batchId'
     | '/provenance/$batchId'
     | '/trace/$batchId'
-    | '/harvest/status/$batchId'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/collect'
     | '/harvest'
+    | '/harvest-status/$batchId'
     | '/provenance/$batchId'
     | '/trace/$batchId'
-    | '/harvest/status/$batchId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   CollectRoute: typeof CollectRoute
-  HarvestRoute: typeof HarvestRouteWithChildren
+  HarvestRoute: typeof HarvestRoute
+  HarvestStatusBatchIdRoute: typeof HarvestStatusBatchIdRoute
   ProvenanceBatchIdRoute: typeof ProvenanceBatchIdRoute
   TraceBatchIdRoute: typeof TraceBatchIdRoute
 }
@@ -150,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HarvestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/harvest-status/$batchId': {
+      id: '/harvest-status/$batchId'
+      path: '/harvest-status/$batchId'
+      fullPath: '/harvest-status/$batchId'
+      preLoaderRoute: typeof HarvestStatusBatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/provenance/$batchId': {
       id: '/provenance/$batchId'
       path: '/provenance/$batchId'
@@ -164,32 +172,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TraceBatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/harvest/status/$batchId': {
-      id: '/harvest/status/$batchId'
-      path: '/status/$batchId'
-      fullPath: '/harvest/status/$batchId'
-      preLoaderRoute: typeof HarvestStatusBatchIdRouteImport
-      parentRoute: typeof HarvestRoute
-    }
   }
 }
-
-interface HarvestRouteChildren {
-  HarvestStatusBatchIdRoute: typeof HarvestStatusBatchIdRoute
-}
-
-const HarvestRouteChildren: HarvestRouteChildren = {
-  HarvestStatusBatchIdRoute: HarvestStatusBatchIdRoute,
-}
-
-const HarvestRouteWithChildren =
-  HarvestRoute._addFileChildren(HarvestRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   CollectRoute: CollectRoute,
-  HarvestRoute: HarvestRouteWithChildren,
+  HarvestRoute: HarvestRoute,
+  HarvestStatusBatchIdRoute: HarvestStatusBatchIdRoute,
   ProvenanceBatchIdRoute: ProvenanceBatchIdRoute,
   TraceBatchIdRoute: TraceBatchIdRoute,
 }

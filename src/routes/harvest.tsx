@@ -171,7 +171,7 @@ function HarvestPage() {
       toast.success("Batch submitted to the ledger");
 
       // Navigate to the harvester's own status view (shows payment info)
-      navigate({ to: "/harvest/status/$batchId", params: { batchId: batch.id } });
+      navigate({ to: "/harvest-status/$batchId", params: { batchId: batch.id } });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Submission failed");
     } finally {
