@@ -49,11 +49,25 @@ export function ProvenanceTimeline({
             src={batch.photo_url}
             alt={`${batch.species_claimed} at harvest`}
             className="aspect-video w-full rounded-md border border-border object-cover"
+            onError={(e) => {
+              // photo_url is a placeholder on test batches — hide the broken img
+              // and show a muted fallback so the rest of the timeline still renders.
+              const target = e.currentTarget;
+              target.style.display = "none";
+              const fallback = target.nextElementSibling as HTMLElement | null;
+              if (fallback) fallback.style.display = "flex";
+            }}
           />
+          <div
+            style={{ display: "none" }}
+            className="leaf-surface aspect-video w-full items-center justify-center rounded-md border border-border"
+          >
+            <span className="text-sm text-muted-foreground">Photo not available</span>
+          </div>
           <p className="mt-2 text-sm text-muted-foreground">
             {new Date(batch.timestamp).toLocaleString()} · harvester {batch.harvester_id}
           </p>
-          {batch.quantity_kg != null && (
+          {batch.quantity_kg != null && batch.quantity_kg > 0 && (
             <p className="mt-1 text-sm text-muted-foreground">
               Quantity: {batch.quantity_kg} kg
             </p>
