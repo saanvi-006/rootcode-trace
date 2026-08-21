@@ -26,6 +26,7 @@ import {
   PaymentBadge,
   QcBadge,
 } from "@/components/rootcode/StatusBadges";
+import { QRCode } from "@/components/rootcode/QRCode";
 import { dataProvider, type Batch } from "@/lib/data";
 
 export const Route = createFileRoute("/collect")({
@@ -266,29 +267,26 @@ function CollectPage() {
                       <h3 className="font-serif text-sm font-medium">Provenance QR code</h3>
                       <span className="text-xs text-muted-foreground">Scan to verify</span>
                     </div>
-                    {qrLoading ? (
-                      <div className="flex flex-col items-center justify-center py-4">
-                        <SproutSpinner label="Generating QR code…" />
-                      </div>
-                    ) : qrError ? (
-                      <p className="text-xs text-destructive">{qrError}</p>
-                    ) : qrData?.qr_data_url ? (
-                      <div className="flex flex-col items-center gap-2">
-                        <img
-                          src={qrData.qr_data_url}
-                          alt={`Provenance QR for batch ${selected.id}`}
-                          className="size-40 rounded-md border border-border bg-white p-2 shadow-sm"
-                        />
-                        <a
-                          href={`/provenance/${selected.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary underline hover:text-primary/80"
-                        >
-                          Open Provenance View ↗
-                        </a>
-                      </div>
-                    ) : null}
+                    <div className="flex flex-col items-center gap-2.5">
+                      <QRCode
+                        value={
+                          typeof window !== "undefined"
+                            ? `${window.location.origin.replace("localhost", "192.168.0.105")}/provenance/${selected.id}`
+                            : (qrData?.provenance_url ?? `/provenance/${selected.id}`)
+                        }
+                        size={160}
+                      />
+                      <a
+                        href={`/provenance/${selected.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-[11px] text-primary underline-offset-4 hover:underline break-all text-center"
+                      >
+                        {typeof window !== "undefined"
+                          ? `${window.location.origin.replace("localhost", "192.168.0.105")}/provenance/${selected.id}`
+                          : (qrData?.provenance_url ?? `/provenance/${selected.id}`)}
+                      </a>
+                    </div>
                   </div>
                 )}
 

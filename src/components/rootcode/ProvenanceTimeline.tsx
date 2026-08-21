@@ -7,6 +7,7 @@ import {
   PaymentBadge,
   QcBadge,
 } from "@/components/rootcode/StatusBadges";
+import { QRCode } from "./QRCode";
 import { dataProvider, type Batch, type Harvester } from "@/lib/data";
 
 // ---------------------------------------------------------------------------
@@ -40,7 +41,7 @@ export function ProvenanceTimeline({
       <div className="mt-3 flex flex-wrap gap-2">
         <ConfidenceBadge score={batch.confidence_score} />
         <QcBadge status={batch.qc_status} />
-        <PaymentBadge status={batch.payment_status} />
+        {showPaymentInfo && <PaymentBadge status={batch.payment_status} />}
       </div>
 
       <ol className="mt-8 space-y-6 border-l border-border pl-6">
@@ -145,6 +146,26 @@ export function ProvenanceTimeline({
           </CardContent>
         </Card>
       )}
+
+      {/* Batch QR code card */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="font-serif text-base">Batch Provenance QR</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center gap-3">
+          <QRCode
+            value={
+              typeof window !== "undefined"
+                ? `${window.location.origin.replace("localhost", "192.168.0.105")}/provenance/${batch.id}`
+                : `/provenance/${batch.id}`
+            }
+            size={160}
+          />
+          <p className="font-mono text-xs text-muted-foreground text-center">
+            Scan to view this batch on mobile devices
+          </p>
+        </CardContent>
+      </Card>
 
       <Card className="mt-6">
         <CardHeader>

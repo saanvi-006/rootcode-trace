@@ -59,6 +59,12 @@ function ProvenancePage() {
           </p>
         )}
 
+        {batch === null && !loading && !error && (
+          <p className="mt-4 text-sm text-muted-foreground">
+            Batch not found. It may still be processing.
+          </p>
+        )}
+
         {batch && !loading && (
           <ProvenanceTimeline batch={batch} showPaymentInfo={false} />
         )}
