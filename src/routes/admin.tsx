@@ -13,6 +13,7 @@ import {
 import { SiteHeader } from "@/components/rootcode/SiteHeader";
 import { SproutSpinner } from "@/components/rootcode/Sprout";
 import { HashChip, PaymentBadge, QcBadge } from "@/components/rootcode/StatusBadges";
+import { HarvestMap } from "@/components/rootcode/HarvestMap";
 import {
   dataProvider,
   type Batch,
@@ -267,9 +268,10 @@ function AdminPage() {
                     </TableHeader>
                     <TableBody>
                       {zones.map((z) => {
-                        const scorePct = Math.round(z.depletion_score * 100);
-                        const isHigh = z.depletion_score >= 0.7;
-                        const isMedium = z.depletion_score >= 0.4;
+                        const isZeroToOne = z.depletion_score <= 1.0 && z.depletion_score > 0;
+                        const scorePct = isZeroToOne ? Math.round(z.depletion_score * 100) : Math.round(z.depletion_score);
+                        const isHigh = scorePct >= 65;
+                        const isMedium = scorePct >= 35 && scorePct < 65;
                         return (
                           <TableRow key={z.id}>
                             <TableCell className="font-medium">{z.region}</TableCell>
@@ -278,7 +280,7 @@ function AdminPage() {
                             </TableCell>
                             <TableCell>
                               <span className="font-mono text-sm">
-                                {z.depletion_score.toFixed(2)}
+                                {isZeroToOne ? z.depletion_score.toFixed(2) : (z.depletion_score / 100).toFixed(2)}
                               </span>{" "}
                               <span className="text-xs text-muted-foreground">({scorePct}%)</span>
                             </TableCell>
@@ -286,11 +288,11 @@ function AdminPage() {
                               {isHigh ? (
                                 <Badge variant="destructive">High Risk</Badge>
                               ) : isMedium ? (
-                                <Badge className="border-transparent bg-warning text-warning-foreground">
+                                <Badge className="border-transparent bg-amber-500 text-amber-950 dark:text-amber-100">
                                   Moderate Risk
                                 </Badge>
                               ) : (
-                                <Badge className="border-transparent bg-success text-success-foreground">
+                                <Badge className="border-transparent bg-emerald-600 text-white">
                                   Low Risk
                                 </Badge>
                               )}
@@ -305,6 +307,9 @@ function AdminPage() {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Section 5: Interactive Leaflet Map for Harvest Locations and Overharvest Zones */}
+        {!loading && <HarvestMap batches={batches} zones={zones} />}
       </main>
     </div>
   );
